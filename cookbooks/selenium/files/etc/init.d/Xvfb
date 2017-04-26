@@ -1,0 +1,67 @@
+#!/bin/bash
+#
+# chkconfig: - 91 35
+# description: Xvfb
+
+# Source function library.
+. /etc/init.d/functions
+
+# Xvfb define
+readonly XVFB=/usr/bin/Xvfb
+readonly XVFB_STATUS=":1 -screen 0 1366x768x24"
+readonly XVFB_PID_FILE=/var/run/xvfb.pid
+readonly XVFB_SERVICE=$"Xvfb"
+
+retval=0
+
+start() {
+    if [ -e ${XVFB_PID_FILE} ]; then
+        action $"Starting ${XVFB_SERVICE}: " /bin/false
+        echo "${XVFB_SERVICE} は既に起動しています。"
+    else
+        action $"Starting ${XVFB_SERVICE}: " /bin/true
+        ${XVFB} ${XVFB_STATUS} > /dev/null 2>&1 &
+        echo $! > ${XVFB_PID_FILE}
+    fi
+}
+
+stop() {
+    if [ -e ${XVFB_PID_FILE} ]; then
+        action $"Stopping ${XVFB_SERVICE}: " /bin/true
+        pid=`cat ${XVFB_PID_FILE}`
+        test ! -z $pid && kill $pid && rm -f ${XVFB_PID_FILE}
+    else
+        action $"Stopping ${XVFB_SERVICE}: " /bin/false
+        echo "${XVFB_SERVICE} は起動していません。"
+    fi
+}
+
+status() {
+    if [ -e ${XVFB_PID_FILE} ]; then
+        echo "${XVFB_SERVICE} (pid `cat ${XVFB_PID_FILE}`) を実行中..."
+    else
+        echo "${XVFB_SERVICE} は起動していません。"
+    fi
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        sleep 1
+        start
+        ;;
+    status)
+        status
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|restart|status}"
+        retval=1
+esac
+
+exit ${retval}

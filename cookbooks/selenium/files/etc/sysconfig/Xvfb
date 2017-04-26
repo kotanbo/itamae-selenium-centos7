@@ -1,0 +1,2 @@
+# Xvfb Enviroment File
+OPTION=":1 -screen 0 1366x768x24"
